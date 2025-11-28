@@ -5,6 +5,8 @@ import type {
   AddPullRequestCommentReactionParams,
   BitbucketClientConfig,
   ChangesResponse,
+  CreatePullRequestBody,
+  CreatePullRequestParams,
   DeletePullRequestCommentParams,
   DiffResponse,
   GetAllUsersParams,
@@ -104,6 +106,57 @@ export class BitbucketClient {
     const { projectKey, repositorySlug, pullRequestId } = params;
     const response = await this.client.get<RestPullRequest>(
       `/projects/${projectKey}/repos/${repositorySlug}/pull-requests/${pullRequestId}`,
+    );
+    return response.data;
+  }
+
+  /**
+   * Create a new pull request.
+   * Supports both same-repo PRs (default) and cross-repo PRs (when fromRepositorySlug is provided).
+   * Branch names are automatically converted to full refs (e.g., "main" → "refs/heads/main").
+   */
+  async createPullRequest(params: CreatePullRequestParams): Promise<RestPullRequest> {
+    const {
+      projectKey,
+      repositorySlug,
+      title,
+      description,
+      fromBranch,
+      toBranch,
+      fromRepositorySlug,
+      fromProjectKey,
+      reviewers,
+      draft,
+    } = params;
+
+    // Convert branch names to full refs if needed
+    const toRefId = (branch: string) =>
+      branch.startsWith('refs/') ? branch : `refs/heads/${branch}`;
+
+    const body: CreatePullRequestBody = {
+      title,
+      ...(description && { description }),
+      fromRef: {
+        id: toRefId(fromBranch),
+        ...(fromRepositorySlug && {
+          repository: {
+            slug: fromRepositorySlug,
+            project: { key: fromProjectKey || projectKey },
+          },
+        }),
+      },
+      toRef: {
+        id: toRefId(toBranch),
+      },
+      ...(reviewers && reviewers.length > 0 && {
+        reviewers: reviewers.map((username) => ({ user: { name: username } })),
+      }),
+      ...(draft !== undefined && { draft }),
+    };
+
+    const response = await this.client.post<RestPullRequest>(
+      `/projects/${projectKey}/repos/${repositorySlug}/pull-requests`,
+      body,
     );
     return response.data;
   }

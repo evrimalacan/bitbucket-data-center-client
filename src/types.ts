@@ -932,3 +932,70 @@ export interface RemovePullRequestCommentReactionParams {
   /** The emoticon identifier to remove */
   emoticon: string;
 }
+
+/**
+ * Request body for creating a pull request.
+ * Matches the Bitbucket Server API structure for POST /pull-requests.
+ */
+export interface CreatePullRequestBody {
+  /** Pull request title */
+  title: string;
+  /** Pull request description */
+  description?: string;
+  /** Source branch reference */
+  fromRef: {
+    /** Full ref ID (e.g., "refs/heads/feature-branch") */
+    id: string;
+    /** Repository (required for cross-repo PRs) */
+    repository?: {
+      /** Repository slug */
+      slug: string;
+      /** Project */
+      project: {
+        /** Project key */
+        key: string;
+      };
+    };
+  };
+  /** Target branch reference */
+  toRef: {
+    /** Full ref ID (e.g., "refs/heads/main") */
+    id: string;
+  };
+  /** Reviewers to assign to the PR */
+  reviewers?: Array<{
+    /** User information */
+    user: {
+      /** Username */
+      name: string;
+    };
+  }>;
+  /** Whether this is a draft PR */
+  draft?: boolean;
+}
+
+/**
+ * Parameters for createPullRequest method
+ */
+export interface CreatePullRequestParams {
+  /** The Bitbucket project key (for the target repository) */
+  projectKey: string;
+  /** The repository slug (target repository) */
+  repositorySlug: string;
+  /** Pull request title */
+  title: string;
+  /** Pull request description (optional) */
+  description?: string;
+  /** Source branch name (e.g., "feature-branch" or "refs/heads/feature-branch") */
+  fromBranch: string;
+  /** Target branch name (e.g., "main" or "refs/heads/main") */
+  toBranch: string;
+  /** Source repository slug (for cross-repo PRs, defaults to repositorySlug) */
+  fromRepositorySlug?: string;
+  /** Source project key (for cross-repo PRs, defaults to projectKey) */
+  fromProjectKey?: string;
+  /** Array of usernames to assign as reviewers */
+  reviewers?: string[];
+  /** Whether to create as a draft PR */
+  draft?: boolean;
+}

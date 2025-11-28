@@ -143,6 +143,54 @@ const pr = await client.getPullRequest({
 console.log(pr.title, pr.author?.user.displayName);
 ```
 
+#### Create Pull Request
+
+Create a new pull request. Branch names are automatically converted to full refs:
+
+```typescript
+// Simple same-repo PR
+const pr = await client.createPullRequest({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo',
+  title: 'Add new feature',
+  description: 'This PR adds the new feature as discussed',
+  fromBranch: 'feature-branch',  // Just the branch name
+  toBranch: 'main'
+});
+
+// PR with reviewers
+const prWithReviewers = await client.createPullRequest({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo',
+  title: 'Fix critical bug',
+  description: 'Fixes issue #123',
+  fromBranch: 'bugfix/critical-issue',
+  toBranch: 'develop',
+  reviewers: ['john.doe', 'jane.smith']
+});
+
+// Draft PR
+const draftPr = await client.createPullRequest({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo',
+  title: 'WIP: Refactor authentication',
+  fromBranch: 'wip/auth-refactor',
+  toBranch: 'main',
+  draft: true
+});
+
+// Cross-repo PR (from fork to upstream)
+const crossRepoPr = await client.createPullRequest({
+  projectKey: 'UPSTREAM',
+  repositorySlug: 'upstream-repo',
+  title: 'Contribution from fork',
+  fromBranch: 'feature',
+  toBranch: 'main',
+  fromRepositorySlug: 'my-fork',
+  fromProjectKey: 'MYPROJ'
+});
+```
+
 #### Get Pull Request Changes
 
 Get list of changed files:
