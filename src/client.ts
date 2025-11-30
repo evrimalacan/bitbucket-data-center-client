@@ -16,6 +16,8 @@ import type {
   GetPullRequestDiffParams,
   GetPullRequestFileDiffParams,
   GetPullRequestParams,
+  GetRepositoryParams,
+  GetRequiredReviewersParams,
   GetUserProfileParams,
   InboxPullRequest,
   ListProjectsParams,
@@ -28,6 +30,7 @@ import type {
   RestPullRequest,
   RestPullRequestActivityApiResponse,
   RestPullRequestParticipant,
+  RestRepository,
   RestUser,
   RestUserReaction,
   UpdateReviewStatusParams,
@@ -88,6 +91,15 @@ export class BitbucketClient {
    */
   async listRepositories(params: ListRepositoriesParams): Promise<RepositoriesResponse> {
     const response = await this.client.get<RepositoriesResponse>(`/projects/${params.projectKey}/repos`);
+    return response.data;
+  }
+
+  /**
+   * Get a repository by project key and slug
+   */
+  async getRepository(params: GetRepositoryParams): Promise<RestRepository> {
+    const { projectKey, repositorySlug } = params;
+    const response = await this.client.get<RestRepository>(`/projects/${projectKey}/repos/${repositorySlug}`);
     return response.data;
   }
 
@@ -323,5 +335,37 @@ export class BitbucketClient {
         baseURL: this.client.defaults.baseURL?.replace('/rest/api/latest', '/rest'),
       },
     );
+  }
+
+  /**
+   * Get the list of required/default reviewers for a pull request.
+   * Returns users who would be automatically assigned as reviewers based on configured rules.
+   * Note: Default reviewers are NOT auto-added when creating PRs via API - you must
+   * fetch them with this method and pass them to createPullRequest().
+   * Branch names are automatically converted to full refs (e.g., "main" → "refs/heads/main").
+   * Use getRepository() to obtain the repositoryId.
+   */
+  async getRequiredReviewers(params: GetRequiredReviewersParams): Promise<RestUser[]> {
+    const { projectKey, repositorySlug, repositoryId, sourceBranch, targetBranch } = params;
+
+    // Convert branch names to full refs if needed
+    const toRefId = (branch: string) =>
+      branch.startsWith('refs/') ? branch : `refs/heads/${branch}`;
+
+    // Uses /default-reviewers/latest base path (not /rest/api/latest)
+    const response = await this.client.get<RestUser[]>(
+      `/default-reviewers/latest/projects/${projectKey}/repos/${repositorySlug}/reviewers`,
+      {
+        params: {
+          sourceRepoId: repositoryId,
+          targetRepoId: repositoryId,
+          sourceRefId: toRefId(sourceBranch),
+          targetRefId: toRefId(targetBranch),
+        },
+        baseURL: this.client.defaults.baseURL?.replace('/rest/api/latest', '/rest'),
+      },
+    );
+
+    return response.data;
   }
 }

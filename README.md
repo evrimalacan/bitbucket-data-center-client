@@ -119,6 +119,16 @@ repos.values.forEach(repo => {
 });
 ```
 
+#### Get Repository
+
+```typescript
+const repo = await client.getRepository({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo'
+});
+console.log(`ID: ${repo.id}, Name: ${repo.name}`);
+```
+
 ### Pull Request Operations
 
 #### Get Inbox Pull Requests
@@ -188,6 +198,41 @@ const crossRepoPr = await client.createPullRequest({
   toBranch: 'main',
   fromRepositorySlug: 'my-fork',
   fromProjectKey: 'MYPROJ'
+});
+```
+
+#### Get Required/Default Reviewers
+
+Get the list of default reviewers for a PR before creating it. **Important:** Default reviewers are NOT automatically added when creating PRs via API - you must fetch them and pass them explicitly.
+
+Use `getRepository()` to obtain the repository ID:
+
+```typescript
+// First get the repository to obtain its ID
+const repo = await client.getRepository({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo'
+});
+
+// Get default reviewers for a specific source/target branch combination
+const reviewers = await client.getRequiredReviewers({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo',
+  repositoryId: repo.id,
+  sourceBranch: 'feature-branch',
+  targetBranch: 'main'
+});
+
+console.log('Required reviewers:', reviewers.map(r => r.displayName));
+
+// Create PR with default reviewers
+const pr = await client.createPullRequest({
+  projectKey: 'PROJ',
+  repositorySlug: 'my-repo',
+  title: 'My feature',
+  fromBranch: 'feature-branch',
+  toBranch: 'main',
+  reviewers: reviewers.map(r => r.name)
 });
 ```
 

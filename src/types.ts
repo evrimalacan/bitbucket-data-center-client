@@ -754,6 +754,16 @@ export interface ListRepositoriesParams {
 }
 
 /**
+ * Parameters for getRepository method
+ */
+export interface GetRepositoryParams {
+  /** The Bitbucket Server project key */
+  projectKey: string;
+  /** The repository slug */
+  repositorySlug: string;
+}
+
+/**
  * Parameters for getInboxPullRequests method
  */
 export interface GetInboxPullRequestsParams {
@@ -998,4 +1008,21 @@ export interface CreatePullRequestParams {
   reviewers?: string[];
   /** Whether to create as a draft PR */
   draft?: boolean;
+}
+
+/**
+ * Parameters for getRequiredReviewers method.
+ * Gets the list of users who are required/default reviewers for a PR from a source to target branch.
+ */
+export interface GetRequiredReviewersParams {
+  /** The Bitbucket project key */
+  projectKey: string;
+  /** The repository slug */
+  repositorySlug: string;
+  /** Repository ID - use getRepository() to obtain this */
+  repositoryId: number;
+  /** Source branch name (e.g., "feature-branch" or "refs/heads/feature-branch") */
+  sourceBranch: string;
+  /** Target branch name (e.g., "main" or "refs/heads/main") */
+  targetBranch: string;
 }
