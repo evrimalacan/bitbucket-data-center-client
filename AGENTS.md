@@ -121,3 +121,30 @@ Note: All types are automatically exported via `export type * from './types.js'`
 
 ### Error Handling
 All methods throw axios errors on failure. Use `axios.isAxiosError(error)` to check and access `error.response?.data` for API error details.
+
+## Commit Convention
+
+Commits must follow these rules:
+
+- **Present tense**: Use "Add feature" not "Added feature"
+- **Concise**: Keep the subject line short and to the point
+- **Description**: Add a short relevant description on a new line if needed
+- **No signatures**: Do not include agent signatures or co-author tags
+
+### Format
+```
+<subject line in present tense>
+
+<optional short description>
+```
+
+### Examples
+```
+Add browse and getRawContent methods
+
+New methods for browsing repository contents and fetching raw file content
+```
+
+```
+Fix pagination in list endpoints
+```
