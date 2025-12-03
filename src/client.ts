@@ -7,6 +7,7 @@ import type {
   BrowseParams,
   BrowseResponse,
   ChangesResponse,
+  CheckRepositoryPermissionsParams,
   CreatePullRequestBody,
   CreatePullRequestParams,
   DeletePullRequestCommentParams,
@@ -29,6 +30,7 @@ import type {
   PaginatedResponse,
   RemovePullRequestCommentReactionParams,
   RepositoriesResponse,
+  RepositoryPermissions,
   RestComment,
   RestProject,
   RestPullRequest,
@@ -431,5 +433,37 @@ export class BitbucketClient {
       },
     );
     return response.data;
+  }
+
+  /**
+   * Check repository permissions for the authenticated token.
+   * Returns read/write access flags without modifying anything.
+   */
+  async checkRepositoryPermissions(
+    params: CheckRepositoryPermissionsParams,
+  ): Promise<RepositoryPermissions> {
+    const { projectKey, repositorySlug } = params;
+    const repoPath = `/projects/${projectKey}/repos/${repositorySlug}`;
+
+    // Check READ permission
+    try {
+      await this.client.get(repoPath);
+    } catch {
+      return { read: false, write: false };
+    }
+
+    // Check WRITE permission (try creating branch with invalid body)
+    try {
+      await this.client.post(`${repoPath}/branches`, {});
+      return { read: true, write: true }; // Unlikely path
+    } catch (error) {
+      // Validation error ("name field is required") = has write
+      // Permission error = no write
+      const message =
+        (error as { response?: { data?: { errors?: Array<{ message?: string }> } } })?.response
+          ?.data?.errors?.[0]?.message || '';
+      const write = message.includes('name') && message.includes('required');
+      return { read: true, write };
+    }
   }
 }

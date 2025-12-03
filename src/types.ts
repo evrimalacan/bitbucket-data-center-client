@@ -1138,3 +1138,27 @@ export interface BrowseFileResponse {
  * Check 'children' in response to determine if it's a directory or file.
  */
 export type BrowseResponse = BrowseDirectoryResponse | BrowseFileResponse;
+
+// =============================================================================
+// Permission Check Types
+// =============================================================================
+
+/**
+ * Parameters for checkRepositoryPermissions method
+ */
+export interface CheckRepositoryPermissionsParams {
+  /** The Bitbucket project key */
+  projectKey: string;
+  /** The repository slug */
+  repositorySlug: string;
+}
+
+/**
+ * Result of repository permission check
+ */
+export interface RepositoryPermissions {
+  /** Whether the token has read access to the repository */
+  read: boolean;
+  /** Whether the token has write access to the repository */
+  write: boolean;
+}
