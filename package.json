@@ -1,6 +1,6 @@
 {
   "name": "bitbucket-data-center-client",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "TypeScript client library for Bitbucket Server/Data Center REST API",
   "keywords": [
     "bitbucket",
